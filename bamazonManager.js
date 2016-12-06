@@ -75,8 +75,51 @@ function viewLow() {
 	})
 }
 
+//SHOW MORE INFO IN THIS FUNCTION, FEELS SHITTY TO USE
 function addToInv() {
 	console.log("add to inv called");
+	inquirer.prompt([
+		{
+			name: "itemid",
+			message: "Please enter the ID of the item you would like to add inventory for.",
+			type: "input",
+			validate: function(value) {
+      		if (isNaN(value) === false) {
+		        return true;
+		      }
+		      return false;
+		    }		
+		}, 
+		{
+			name: "amount",
+			message: "Please enter the amount of units you would like to add.",
+			type: "input",
+			validate: function(value) {
+      		if (isNaN(value) === false) {
+		        return true;
+		      }
+		      return false;
+		    }
+		}
+
+	]).then(function(input) {
+		console.log(input);
+		connection.query("SELECT * FROM products WHERE ?", {item_id: input.itemid}, function(error, response) {
+			if (error) throw error;
+			var currentQuantity = response[0].stock_quantity;
+
+
+			connection.query("UPDATE products SET ? WHERE ?", [{
+				stock_quantity: currentQuantity + parseInt(input.amount)
+			}, {
+				item_id: input.itemid
+			}], function(error, response) {
+				if (error) throw error;
+				console.log("Successfully added.");
+			})
+
+		})
+	})
 }
 
 function addProduct() {
