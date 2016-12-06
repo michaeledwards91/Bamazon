@@ -103,7 +103,6 @@ function addToInv() {
 		}
 
 	]).then(function(input) {
-		console.log(input);
 		connection.query("SELECT * FROM products WHERE ?", {item_id: input.itemid}, function(error, response) {
 			if (error) throw error;
 			var currentQuantity = response[0].stock_quantity;
@@ -124,4 +123,56 @@ function addToInv() {
 
 function addProduct() {
 	console.log("add product called");
+	inquirer.prompt([
+		{
+			name: "productName",
+			type: "input",
+			message: "Enter product name."
+		},
+		{
+			name: "departmentName",
+			type: "input",
+			message: "Enter department name."
+		},
+		{
+			name: "productPrice",
+			type: "input",
+			message: "Enter price per unit.",
+			validate: function(value) {
+      		if (isNaN(value) === false) {
+		        return true;
+		      }
+		      return false;
+		    }
+		},
+		{
+			name: "stockQuantity",
+			type: "input",
+			message: "Enter stock quantity",
+			validate: function(value) {
+      		if (isNaN(value) === false) {
+		        return true;
+		      }
+		      return false;
+		    }
+		}
+
+	]).then(function(input) {
+		console.log(input);
+		var productName = toTitleCase(input.productName);
+		var departmentName = toTitleCase(input.departmentName);
+		var productPrice = parseFloat(input.productPrice).toFixed(2);
+		var stockQuantity = input.stockQuantity;
+		var valueString = "('"+productName+"', '"+departmentName+"', "+productPrice+", "+stockQuantity+");";
+
+		connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES " + valueString, function(error, response) {
+			if (error) throw error;
+			console.log(response);
+		})
+	})
+}
+
+function toTitleCase(str)
+{
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
