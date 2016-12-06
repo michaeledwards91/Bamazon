@@ -24,7 +24,6 @@ function menu() {
 		choices: ["View Products For Sale", "View Low Inventory", "Add to Inventory", "Add New Product"]
 
 	}).then(function(input) {
-		console.log(input);
 		switch (input.choice) {
 			case "View Products For Sale":
 				displayItems();
@@ -56,7 +55,9 @@ function displayItems() {
 		}
 		//display table
 		console.log(itemsTable.toString());
-	})
+		//ask if user would like to return to menu
+		returnToMenu();
+	});
 }
 
 function viewLow() {
@@ -72,12 +73,14 @@ function viewLow() {
 		}
 		//display table
 		console.log(itemsTable.toString());
-	})
+		//ask if user would like to return to menu
+		returnToMenu();
+	});
 }
 
 //SHOW MORE INFO IN THIS FUNCTION, FEELS SHITTY TO USE
 function addToInv() {
-	console.log("add to inv called");
+
 	inquirer.prompt([
 		{
 			name: "itemid",
@@ -112,9 +115,10 @@ function addToInv() {
 				stock_quantity: currentQuantity + parseInt(input.amount)
 			}, {
 				item_id: input.itemid
-			}], function(error, response) {
+			}], function(error, response2) {
 				if (error) throw error;
-				console.log("Successfully added.");
+				console.log("Successfully added " + input.amount + " units of '" + response[0].product_name + "' to inventory.");
+				returnToMenu();
 			})
 
 		})
@@ -122,7 +126,6 @@ function addToInv() {
 }
 
 function addProduct() {
-	console.log("add product called");
 	inquirer.prompt([
 		{
 			name: "productName",
@@ -158,7 +161,6 @@ function addProduct() {
 		}
 
 	]).then(function(input) {
-		console.log(input);
 		var productName = toTitleCase(input.productName);
 		var departmentName = toTitleCase(input.departmentName);
 		var productPrice = parseFloat(input.productPrice).toFixed(2);
@@ -167,7 +169,8 @@ function addProduct() {
 
 		connection.query("INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES " + valueString, function(error, response) {
 			if (error) throw error;
-			console.log(response);
+			console.log("Product successfully added.");
+			returnToMenu();
 		})
 	})
 }
@@ -175,4 +178,20 @@ function addProduct() {
 function toTitleCase(str)
 {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
+//run at the end of other functions to ask if user wants to return to the menu
+function returnToMenu() {
+	inquirer.prompt({
+		name: "choice",
+		type: "confirm",
+		message: "Would you like to return to the menu?"
+
+	}).then(function(input) {
+		if (input.choice === true) {
+			menu();
+		} else {
+			connection.end();
+		}
+	})
 }

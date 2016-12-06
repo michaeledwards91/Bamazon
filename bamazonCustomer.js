@@ -19,7 +19,6 @@ connection.connect(function(err) {
 function displayItems() {
 	connection.query("SELECT * FROM products", function(error, response) {
 		if (error) throw error;
-		console.log(response);
 		//create new table to push product info into
 		var itemsTable = new Table({
 			head: ["Item ID", "Product Name", "Price"]
